@@ -6,6 +6,7 @@ from .models import Product, Order
 from .admin_mixins import ExportAsCSVMixin
 
 
+
 class OrderInline(admin.TabularInline):
     model = Product.orders.through
 
@@ -33,11 +34,11 @@ class ProductAdmin(admin.ModelAdmin, ExportAsCSVMixin):
     # list_display = "pk", "name", "description", "price", "discount"
     list_display = "pk", "name", "description_short", "price", "discount", "archived"
     list_display_links = "pk", "name"
-    ordering = "-name", "pk"
+    ordering = "name", "pk"
     search_fields = "name", "description"
     fieldsets = [
         (None, {
-           "fields": ("name", "description"),
+            "fields": ("name", "description"),
         }),
         ("Price options", {
             "fields": ("price", "discount"),
@@ -47,7 +48,7 @@ class ProductAdmin(admin.ModelAdmin, ExportAsCSVMixin):
             "fields": ("archived",),
             "classes": ("collapse",),
             "description": "Extra options. Field 'archived' is for soft delete",
-        })
+        }),
     ]
 
     def description_short(self, obj: Product) -> str:
@@ -55,13 +56,13 @@ class ProductAdmin(admin.ModelAdmin, ExportAsCSVMixin):
             return obj.description
         return obj.description[:48] + "..."
 
-
 # admin.site.register(Product, ProductAdmin)
 
 
-# class ProductInline(admin.TabularInline):
 class ProductInline(admin.StackedInline):
+#class ProductInline(admin.TabularInline):
     model = Order.products.through
+
 
 
 @admin.register(Order)
@@ -72,7 +73,8 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = "delivery_address", "promocode", "created_at", "user_verbose"
 
     def get_queryset(self, request):
-        return Order.objects.select_related("user").prefetch_related("products")
+        return Order.objects.select_related("user").prefetch_related('products')
 
     def user_verbose(self, obj: Order) -> str:
         return obj.user.first_name or obj.user.username
+
