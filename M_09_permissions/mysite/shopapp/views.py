@@ -47,7 +47,7 @@ class ProductDetailsView(DetailView):
     model = Product
     context_object_name = "product"
     queryset = (
-        Order.objects.select_related("user").prefetch_related("products")
+        Product.objects.select_related("user").prefetch_related("products")
     )
 
 
