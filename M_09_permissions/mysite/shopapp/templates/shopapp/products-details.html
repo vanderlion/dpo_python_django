@@ -7,7 +7,7 @@
 {% block body %}
     <h1>Product <strong>{{ product.name }}</strong></h1>
     <div>
-        <div>Product by {% firstof object.user.first_name object.user.username %}</div>
+        <div>Product by <em>{% firstof object.create_by.first_name object.create_by.username %}</em></div>
         <div>Description:<em>{{ product.description }}</em></div>
         <div>Price:<em>{{ product.price }}</em></div>
         <div>Discount:<em>{{ product.discount }}</em></div>

@@ -46,9 +46,6 @@ class ProductDetailsView(DetailView):
     template_name = "shopapp/products-details.html"
     model = Product
     context_object_name = "product"
-    queryset = (
-        Product.objects.select_related("user").prefetch_related("products")
-    )
 
 
 
@@ -70,17 +67,24 @@ class ProductListView(ListView):
 
 
 class ProductCreateView(UserPassesTestMixin, CreateView):
+
     def test_func(self):
-        #return self.request.user.groups.filter(name="secret-group").exist()
+        item = self.get_object()
+        if self.request.user == item.created_by:
+            return True
         return self.request.user.is_superuser
 
     model = Product
-    fields = "name", "price", "description", "discount", "user"
-    # form_class = GroupForm
+    fields = "name", "price", "description", "discount"
     success_url = reverse_lazy("shopapp:products_list")
 
+    def form_valid(self, form):
+        form.instance.create_by = self.request.user
+        return super().form_valid(form)
 
-class ProductUpdateView(UpdateView):
+
+class ProductUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = "shopapp.change_product"
     model = Product
     fields = "name", "price", "description", "discount"
     template_name_suffix = "_update_form"

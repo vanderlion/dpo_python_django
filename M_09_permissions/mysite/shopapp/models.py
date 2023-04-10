@@ -12,7 +12,7 @@ class Product(models.Model):
     discount = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     archived = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    create_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
     def __str__(self) -> str:
         return f"Product(pk={self.pk,}, name={self.name!r})"
