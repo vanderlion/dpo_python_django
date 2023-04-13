@@ -39,10 +39,12 @@ class ProductCreateViewTestCase(TestCase):
 class ProductDetailsViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.product = Product.objects.create(name="Best Product")
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         cls.product.delete()
 
 #    def setUp(self) -> None:
@@ -89,10 +91,12 @@ class OrderListViewTestCase(TestCase):
     def setUpClass(cls):
 #        cls.credentials = dict(username="naf", password="naf021@")
 #        cls.user = User.objects.create_user(**cls.credentials)
+        super().setUpClass()
         cls.user = User.objects.create_user(username="naf", password="naf021@")
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         cls.user.delete()
 
     def setUp(self) -> None:
