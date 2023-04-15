@@ -5,9 +5,9 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+from shopapp.utils import add_two_numbers
 
 from shopapp.models import Product
-from shopapp.utils import add_two_numbers
 
 
 class AddTwoNumbersTestCase(TestCase):
@@ -20,7 +20,6 @@ class ProductCreateViewTestCase(TestCase):
     def setUp(self) -> None:
         self.product_name = "".join(choices(ascii_letters, k=10))
         Product.objects.filter(name=self.product_name).delete()
-
     def test_create_product(self):
         response = self.client.post(
             reverse("shopapp:product_create"),
@@ -40,11 +39,19 @@ class ProductCreateViewTestCase(TestCase):
 class ProductDetailsViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.product = Product.objects.create(name="Best Product")
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         cls.product.delete()
+
+#    def setUp(self) -> None:
+#        self.product = Product.objects.create(name="Best Product")
+#
+#    def tearDown(self) -> None:
+#        self.product.delete()
 
     def test_get_product(self):
         response = self.client.get(
@@ -59,14 +66,18 @@ class ProductDetailsViewTestCase(TestCase):
         self.assertContains(response, self.product.name)
 
 
-class ProductsListViewTestVase(TestCase):
+class ProductsListViewTestCase(TestCase):
     fixtures = [
-        'products-fixture.json',
+        'product-fixtures.json',
     ]
 
     def test_products(self):
         response = self.client.get(reverse("shopapp:products_list"))
-        self.assertQuerysetEqual(
+#        product = Product.objects.filter(archived=False).all()
+#        product_ = response.context["products"]
+#        for p, p_ in zip(product, product_):
+#            self.assertEqual(p.pk, p_.pk)
+        self.assertQuerySetEqual(
             qs=Product.objects.filter(archived=False).all(),
             values=(p.pk for p in response.context["products"]),
             transform=lambda p: p.pk,
@@ -74,17 +85,22 @@ class ProductsListViewTestVase(TestCase):
         self.assertTemplateUsed(response, 'shopapp/products-list.html')
 
 
-class OrdersListViewTestCase(TestCase):
+class OrderListViewTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.user = User.objects.create_user(username="bob_test", password="qwerty")
+#        cls.credentials = dict(username="naf", password="naf021@")
+#        cls.user = User.objects.create_user(**cls.credentials)
+        super().setUpClass()
+        cls.user = User.objects.create_user(username="naf", password="naf021@")
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         cls.user.delete()
 
     def setUp(self) -> None:
+#        self.client.login(**self.credentials)
         self.client.force_login(self.user)
 
     def test_orders_view(self):
@@ -94,18 +110,19 @@ class OrdersListViewTestCase(TestCase):
     def test_orders_view_not_authenticated(self):
         self.client.logout()
         response = self.client.get(reverse("shopapp:orders_list"))
+        #self.assertRedirects(response, str(settings.LOGIN_URL))
         self.assertEqual(response.status_code, 302)
         self.assertIn(str(settings.LOGIN_URL), response.url)
 
 
 class ProductsExportViewTestCase(TestCase):
     fixtures = [
-        'products-fixture.json',
+        'product-fixtures.json',
     ]
 
-    def test_get_products_view(self):
+    def test_get_product_view(self):
         response = self.client.get(
-            reverse("shopapp:products-export"),
+            reverse("shopapp:products-export")
         )
         self.assertEqual(response.status_code, 200)
         products = Product.objects.order_by("pk").all()
@@ -121,5 +138,5 @@ class ProductsExportViewTestCase(TestCase):
         products_data = response.json()
         self.assertEqual(
             products_data["products"],
-            expected_data,
+            expected_data
         )

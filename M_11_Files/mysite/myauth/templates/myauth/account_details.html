@@ -1,0 +1,16 @@
+{% extends 'myauth/base.html' %}
+
+{% block title %}
+    Account #{{ object.pk }} details
+{% endblock %}
+
+{% block body %}
+    <h1>User info</h1>
+
+        <h2>Detail</h2>
+        <p>Username: {{ profile.user }}</p>
+        {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="{{ profile.avatar.name }}">
+        {% endif %}
+
+{% endblock %}

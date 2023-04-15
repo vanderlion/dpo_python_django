@@ -1,12 +1,12 @@
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.contrib.auth import authenticate, login
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render, redirect, reverse
+from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse_lazy
-from django.views import View
-from django.views.generic import TemplateView, CreateView
-
+from django.views.generic import TemplateView, CreateView, ListView, DetailView
 from .models import Profile
 
 
@@ -24,16 +24,36 @@ class RegisterView(CreateView):
         Profile.objects.create(user=self.object)
         username = form.cleaned_data.get("username")
         password = form.cleaned_data.get("password1")
-        user = authenticate(
-            self.request,
-            username=username,
-            password=password,
-        )
+        user = authenticate(self.request, username=username, password=password)
         login(request=self.request, user=user)
+
         return response
 
 
-class MyLogoutView(LogoutView):
+def login_view(request: HttpRequest) -> HttpResponse:
+    if request.method == "GET":
+        if request.user.is_authenticated:
+            return redirect('/admin/')
+
+        return render(request, 'myauth/login.html')
+
+    username = request.POST["username"]
+    password = request.POST["password"]
+
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return redirect('/admin/')
+
+    return render(request, 'myauth/login.html', {"error": "Invalid login credentials"})
+
+
+def logout_view(request: HttpRequest) -> HttpResponse:
+    logout(request)
+    return redirect(reverse("myauth:login"))
+
+
+class MyLogut_view(LogoutView):
     next_page = reverse_lazy("myauth:login")
 
 
@@ -57,10 +77,18 @@ def set_session_view(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def get_session_view(request: HttpRequest) -> HttpResponse:
-    value = request.session.get("foobar", "default")
+    value = request.session.get("foobar", "default value")
     return HttpResponse(f"Session value: {value!r}")
 
 
-class FooBarView(View):
-    def get(self, request: HttpRequest) -> JsonResponse:
-        return JsonResponse({"foo": "bar", "spam": "eggs"})
+class AccountsListView(ListView):
+    template_name = "myauth/accounts_list.html"
+    context_object_name = "users"
+    queryset = Profile.objects.all()
+
+
+class AccountDetailsView(DetailView):
+    template_name = "myauth/account_details.html"
+    queryset = (
+        Profile.objects.select_related("user")
+    )

@@ -1,0 +1,26 @@
+{% extends 'myauth/base.html' %}
+
+{% block title%}
+    Users list
+{% endblock %}
+
+{% block body %}
+    <h1>Users:</h1>
+    {% if users %}
+        <div>
+        {% for user in users %}
+            <div>
+                <p><a href="{% url 'myauth:account-details' pk=user.pk %}"
+                >Name: {{ user.user }}</a></p>
+
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <h3>No users yet</h3>
+    {% endif %}
+    <div>
+        <a href="{% url 'myauth:register' %}"
+        >Register new account</a>
+    </div>
+{% endblock %}
