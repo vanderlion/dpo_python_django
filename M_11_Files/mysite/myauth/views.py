@@ -1,34 +1,75 @@
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, CreateView, ListView, DetailView
-from .models import Profile
+from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView
+
+from .forms import AccountForm
+from .models import Profile, Account
 
 
 class AboutMeView(TemplateView):
     template_name = "myauth/about-me.html"
 
 
-class RegisterView(CreateView):
-    form_class = UserCreationForm
-    template_name = "myauth/register.html"
-    success_url = reverse_lazy("myauth:about-me")
+class AccountCreateView(UserPassesTestMixin, CreateView):
+    model = Account
+    fields = "username", "bio", "avatar"
+    template_name = "myauth/account_form.html"
+    success_url = reverse_lazy("myauth:accounts_list")
+
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+
+
+class AccountDetailsView(TemplateView):
+    template_name = "myauth/account_details.html"
+    queryset = Account.objects.prefetch_related("images")
+    context_object_name = "users"
+
+
+class AccountUpdateView(UpdateView):
+    model = Account
+    template_name_suffix = '_update_form'
+    # template_name = 'myauth/marketProfile_update_form.html'
+    form_class = AccountForm
+
+    def get_success_url(self):
+        return reverse(
+            'myauth:account_details',
+            kwargs={'pk': self.object.pk}
+        )
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        Profile.objects.create(user=self.object)
-        username = form.cleaned_data.get("username")
-        password = form.cleaned_data.get("password1")
-        user = authenticate(self.request, username=username, password=password)
-        login(request=self.request, user=user)
-
         return response
 
+
+class AccountsListView(ListView):
+    template_name = 'myauth/accounts_list.html'
+    context_object_name = 'users'
+    queryset = Account.objects.all()
+
+
+class RegisterView(CreateView):
+    form_class = UserCreationForm
+    template_name = 'myauth/register.html'
+    success_url = reverse_lazy('myauth:about-me')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        Account.objects.create(user=self.object)
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password2')
+        user = authenticate(self.request, username=username, password=password)
+        login(request=self.request, user=user)
+        return response
 
 def login_view(request: HttpRequest) -> HttpResponse:
     if request.method == "GET":
@@ -79,16 +120,3 @@ def set_session_view(request: HttpRequest) -> HttpResponse:
 def get_session_view(request: HttpRequest) -> HttpResponse:
     value = request.session.get("foobar", "default value")
     return HttpResponse(f"Session value: {value!r}")
-
-
-class AccountsListView(ListView):
-    template_name = "myauth/accounts_list.html"
-    context_object_name = "users"
-    queryset = Profile.objects.all()
-
-
-class AccountDetailsView(DetailView):
-    template_name = "myauth/account_details.html"
-    queryset = (
-        Profile.objects.select_related("user")
-    )

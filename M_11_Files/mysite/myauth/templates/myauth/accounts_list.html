@@ -10,17 +10,17 @@
         <div>
         {% for user in users %}
             <div>
-                <p><a href="{% url 'myauth:account-details' pk=user.pk %}"
-                >Name: {{ user.user }}</a></p>
+                <p><a href="{% url 'myauth:account_details' pk=user.pk %}"
+                >Name: {{ user.username }}</a></p>
 
             </div>
         {% endfor %}
         </div>
     {% else %}
-        <h3>No users yet</h3>
+        <h3>No accounts yet</h3>
     {% endif %}
     <div>
-        <a href="{% url 'myauth:register' %}"
+        <a href="{% url 'myauth:account_create' %}"
         >Register new account</a>
     </div>
 {% endblock %}
