@@ -34,7 +34,7 @@ msgstr "Цена"
 
 #: app_goods/models.py:11
 msgid "good"
-msgstr "товары"
+msgstr "товар"
 
 #: app_pages/views.py:12
 #, python-format
