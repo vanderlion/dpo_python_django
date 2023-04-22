@@ -1,0 +1,9 @@
+asgiref==3.6.0
+Django==3.2.18
+sqlparse==0.4.4
+Pillow==9.5.0
+setuptools==67.7.0
+wheel==0.40.0
+
+djangorestframework~=3.14.0
+serializers~=0.2.4
