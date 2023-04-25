@@ -1,0 +1,18 @@
+[
+  {
+    "fields": {
+      "name": "Политика",
+      "code": "politic"
+    },
+    "model": "app_news.newstype",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "Спорт",
+      "code": "sport"
+    },
+    "model": "app_news.newstype",
+    "pk": 2
+  }
+]
